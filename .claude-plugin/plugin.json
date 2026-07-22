@@ -1,0 +1,9 @@
+{
+  "name": "snare",
+  "version": "0.1.0",
+  "description": "Turn a bug report or stack trace into ONE failing test that reproduces it — before any fix. Proves the test fails for the reported reason, then hands off a red test the fix must turn green.",
+  "author": {
+    "name": "Abdullah Chaudhary",
+    "url": "https://github.com/myselfabdullah007"
+  }
+}

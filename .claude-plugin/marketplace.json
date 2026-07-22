@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "snare",
+  "description": "Reproduce before you fix. A bug is not understood until a test fails for it.",
+  "owner": {
+    "name": "Abdullah Chaudhary",
+    "url": "https://github.com/myselfabdullah007"
+  },
+  "plugins": [
+    {
+      "name": "snare",
+      "description": "Turns a bug report or stack trace into one failing test that reproduces it, before any fix.",
+      "source": "./",
+      "category": "testing"
+    }
+  ]
+}
