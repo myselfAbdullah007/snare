@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.png" alt="snare logo — a bug caught in a frame" width="200">
+
 <img src="assets/banner.svg" alt="snare — reproduce before you fix" width="100%">
 
 <br>
