@@ -13,8 +13,6 @@
 
 **Turn a bug report or stack trace into _one failing test_ that reproduces it — before any fix.**
 
-<img src="assets/demo.svg" alt="snare in action: pasted trace → failing test → red for the reported reason → stop" width="100%">
-
 </div>
 
 ---
