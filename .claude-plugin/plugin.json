@@ -1,9 +1,22 @@
 {
   "name": "snare",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a bug report or stack trace into ONE failing test that reproduces it — before any fix. Proves the test fails for the reported reason, then hands off a red test the fix must turn green.",
   "author": {
     "name": "Abdullah Chaudhary",
     "url": "https://github.com/myselfabdullah007"
-  }
+  },
+  "homepage": "https://github.com/myselfAbdullah007/snare",
+  "repository": "https://github.com/myselfAbdullah007/snare",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "debugging",
+    "failing-test",
+    "regression-test",
+    "reproduction",
+    "tdd",
+    "stack-trace",
+    "bug-report"
+  ]
 }

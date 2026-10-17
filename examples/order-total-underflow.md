@@ -11,7 +11,7 @@ Actual:   cart_total([{"price": 400, "qty": -3}, {"price": 500, "qty": 2}]) -> -
 Expected: negative qty is not a valid line; total should never go below 0
 ```
 
-## What `repro` does — not fix, reproduce
+## What `snare` does — not fix, reproduce
 
 1. Reads `cart.py`, finds the seam: `cart_total()` is a pure function. No need
    to spin up the checkout flow — reproduce right there.

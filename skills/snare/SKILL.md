@@ -14,12 +14,22 @@ Turn a bug into ONE failing test that reproduces it. You write the red test.
 You do not fix the bug — the fix is a separate step, and a fix without a
 reproducing test is how the bug comes back.
 
-## The rule that matters
+## Two rules, in order
 
-The test must fail for the **reported reason**, not any reason. A test that
-fails on an import error, a typo, a missing fixture, or the wrong assertion is
-worthless — it goes green when someone fixes the wrong thing. Prove the failure
-is the actual bug before you hand it over.
+**1. Assert the behavior that SHOULD happen, never the behavior you observed.**
+This is the mistake that ruins the task. The report hands you a wrong value;
+writing it into the assertion produces a test that passes today and never
+catches anything.
+
+```python
+assert total == -200   # WRONG — pins the bug in place, green forever
+assert total >= 0      # RIGHT — encodes the contract, red until it's fixed
+```
+
+**2. The test must fail for the REPORTED reason, not any reason.** A test that
+fails on an import error, a bad fixture, or a typo goes green when someone
+fixes something unrelated, and the real bug ships anyway. Prove the failure
+matches the symptom before handing it over.
 
 ## Steps
 
@@ -30,22 +40,51 @@ is the actual bug before you hand it over.
 
 2. **Find the seam.** Locate the smallest unit that exercises the bug: a pure
    function beats an HTTP round-trip beats a full E2E flow. Reproduce at the
-   lowest layer that still shows the reported failure.
+   lowest layer that still shows the reported failure. If the bug only appears
+   through a seam you cannot reach cheaply (real network, real clock, real
+   ordering), say so and pin the non-determinism explicitly rather than
+   skipping to a higher layer.
 
-3. **Match the repo.** Detect the existing test framework, directory, naming,
-   and fixtures (`pytest`, `jest`/`vitest`, `go test`, `rspec`, …). Put the
-   test where the sibling tests live. Do not introduce a framework — if there
-   are no tests at all, say so and use the language's stdlib test tool.
+3. **Match the repo.** Detect the existing framework, test directory, naming
+   convention, and fixtures before writing a line. Put the test where its
+   siblings live. Never introduce or install a framework — if the repo has no
+   tests at all, say so and use the language's stdlib test tool.
 
 4. **Write ONE test.** Arrange the exact state from the report, act, assert the
-   *correct* behavior. It fails now because the code is wrong. Name it for the
-   bug (`test_negative_qty_underflows_total`), not the function. Add a one-line
-   comment linking the issue/trace.
+   correct behavior (rule 1). Name it for the bug, not the function —
+   `test_negative_qty_does_not_underflow_total`, not `test_cart_total`. Add one
+   comment line linking the issue or trace. Touch nothing else: no edits to
+   source, no edits to existing tests, no new helpers.
 
-5. **Run it. Confirm it's red for the right reason.** Execute the test. Read the
-   failure output and verify it matches the reported symptom — same exception,
-   same wrong value. If it fails for any other reason, the repro is wrong; fix
-   the test, not the code.
+5. **Run that one test — not the suite.** Use the narrowest invocation the
+   framework offers:
+
+   | Framework | Run one test |
+   |---|---|
+   | pytest | `pytest path/test_x.py::test_name -x` |
+   | jest | `npx jest path/x.test.js -t "test name"` |
+   | vitest | `npx vitest run path/x.test.js -t "test name"` |
+   | go test | `go test ./pkg -run '^TestName$'` |
+   | cargo | `cargo test test_name -- --exact` |
+   | rspec | `bundle exec rspec path/x_spec.rb:LINE` |
+   | maven / gradle | `mvn test -Dtest=Class#method` / `gradle test --tests Class.method` |
+   | dotnet | `dotnet test --filter FullyQualifiedName~TestName` |
+
+   Prefer the repo's own wrapper if it has one (`make test`, `npm test --`,
+   `./scripts/test`) with the single-test filter passed through.
+
+6. **Triage the output before you report.** Match what you got against this
+   table and act on it — do not hand over a repro you haven't cleared:
+
+   | What the run printed | Verdict |
+   |---|---|
+   | Same exception / same wrong value as the report | **Correct.** Hand off. |
+   | Test **passed** | Repro is wrong. You asserted the observed value (rule 1), arranged state the bug doesn't trigger on, or picked a seam that bypasses it. Re-read the report. |
+   | `ImportError`, `ModuleNotFoundError`, `SyntaxError`, collection error | Test is broken, not the code. Fix the test. |
+   | Fixture / setup / teardown error | Wrong seam or incomplete arrange. Fix the test. |
+   | Different exception type, or a wrong value that isn't the reported one | You're on a different code path. Re-trace from step 1. |
+
+   Every verdict but the first means fix the **test**, never the source.
 
 ## Output
 
@@ -58,15 +97,16 @@ Red: <the assertion/exception that fires, quoting the actual run output>
 Fix hint: <one line — the root cause, so the next step knows where to go>
 ```
 
-Then stop. Do not edit the source to make it pass unless the user asks for the
-fix too.
+Then stop. Do not edit the source to make it pass unless the user explicitly
+asks for the fix too. Handing over a green test is task failure.
 
 ## Boundaries
 
 - One test, not a suite. The narrowest case that proves the bug. YAGNI on edge
   cases the report didn't mention.
 - Reproduce, don't fix. If the bug is environmental (network, clock, ordering)
-  and can't be made deterministic, say so and write the closest deterministic
-  test, marking what you had to pin.
-- Can't reproduce from the given info? Name the exact missing fact (a value, a
-  version, a step) instead of guessing a test into existence.
+  and can't be made deterministic, write the closest deterministic test and
+  state what you had to pin.
+- Can't reproduce from the given info? Name the exact missing fact — a value, a
+  version, a step — instead of guessing a test into existence. A named gap is a
+  useful answer; an invented repro is not.
